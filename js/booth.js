@@ -1,12 +1,16 @@
-// 부스 운영자 화면: 명단·참여 확인·현장 접수. 처리는 기기에 먼저 쌓고(대기열) 30초마다 서버로 보낸다.
+// 부스 운영자 화면: 명단·참여 확인·현장 접수·강사 서명·회차 알림. 처리는 기기에 먼저 쌓고(대기열) 30초마다 서버로 보낸다.
 import { call } from './api.js';
 import { h, $, clear, toast, fmtTime } from './util.js';
 import * as store from './store.js';
+import { askSignature } from './signpad.js';
+import { makeAlarm } from './alarm.js';
+import { boothAlerts } from './alarm-rules.js';
 
 const params = new URLSearchParams(location.search);
 const boothNo = params.get('b') || store.load('booth.last.b');
 const token = params.get('t') || store.load('booth.last.t');
 const K = `booth.${boothNo}`;
+const alarm = makeAlarm(K);
 let roster = store.load(`${K}.roster`);
 let queue = store.load(`${K}.queue`, []);
 let device = store.load('booth.device');
@@ -68,7 +72,33 @@ function walkin(session, pid, label, size) {
   return true;
 }
 
-function sessionView(s, nowMin) {
+const ROLES = ['주강사', '보조강사'];
+
+function applySign(s, op) {
+  s.signs = (s.signs || []).filter(g => g.role !== op.role);
+  s.signs.push({ role: op.role, name: op.name, at: op.at, pending: true });
+}
+
+async function sign(s, role, n) {
+  const got = await askSignature({ title: `${n}회차 ${fmtTime(s.start)}~${fmtTime(s.end)} · ${role} 서명`, role, boothNo });
+  if (!got) return;
+  enqueue({ t: 'sign', sessionId: s.id, role, name: got.name, img: got.img }, () => applySign(s, { ...got, role, at: '방금' }));
+  toast(`${role} 서명을 저장했어요.`);
+}
+
+// 회차마다 강사 서명 (강사비 지급 증빙). 주강사는 꼭, 보조강사는 있을 때만
+function signView(s, n) {
+  const box = h('div', { style: 'margin-top:12px;border-top:1px solid var(--line);padding-top:10px' }, h('b', {}, '강사 서명 (강사비 증빙)'));
+  for (const role of ROLES) {
+    const g = (s.signs || []).find(x => x.role === role);
+    box.append(h('div', { class: 'rec' },
+      h('span', {}, h('b', {}, role), h('small', {}, g ? `✓ ${g.name} · ${g.pending ? '전송 대기' : String(g.at).slice(11, 16)}` : role === '주강사' ? '서명 필요' : '보조강사가 있으면 서명')),
+      h('button', { type: 'button', class: `btn small${g ? '' : role === '주강사' ? ' primary' : ''}`, onclick: () => sign(s, role, n) }, g ? '다시 서명' : '서명하기')));
+  }
+  return box;
+}
+
+function sessionView(s, nowMin, n) {
   const active = s.list.filter(p => p.status !== '취소');
   const came = active.filter(p => p.status === '참여').reduce((n, p) => n + p.size, 0);
   const booked = active.reduce((n, p) => n + p.size, 0);
@@ -77,7 +107,7 @@ function sessionView(s, nowMin) {
   const head = h('button', { type: 'button', class: 'slot', style: `--gil:${isNow ? 'var(--accent)' : 'var(--line)'}`, 'aria-expanded': String(expanded),
     onclick: () => { if (open.has(s.id)) open.delete(s.id); else open.add(s.id); render(); } },
     h('span', { class: 'time' }, fmtTime(s.start), h('small', {}, fmtTime(s.end))),
-    h('span', { class: 'what' }, h('b', {}, `신청 ${booked}명 · 참여 ${came}명 · 미도착 ${Math.max(0, booked - came)}명`), h('small', {}, `남은 자리 ${s.available} / 정원 ${s.capacity}`)),
+    h('span', { class: 'what' }, h('b', {}, `신청 ${booked}명 · 참여 ${came}명 · 미도착 ${Math.max(0, booked - came)}명`), h('small', {}, `남은 자리 ${s.available} / 정원 ${s.capacity} · ${(s.signs || []).some(g => g.role === '주강사') ? '서명 ✓' : nowMin >= s.end ? '서명 필요' : ''}`)),
     h('span', { class: 'badge' }, expanded ? '▲' : '▼'));
   const wrap = h('div', {}, head);
   if (!expanded) return wrap;
@@ -104,6 +134,7 @@ function sessionView(s, nowMin) {
         const ok = walkin(s, pid.value.trim().toUpperCase(), label.value.trim(), Math.max(1, Number(size.value) || 1));
         if (ok) drafts[s.id] = { pid: '', label: '', size: '1' };
       } }, '현장 접수'))));
+  list.append(signView(s, n));
   wrap.append(list);
   return wrap;
 }
@@ -122,7 +153,56 @@ function render() {
   $('#emergency').classList.toggle('hidden', !roster.emergency);
   const box = clear($('#sessions'));
   const nowMin = nowMinGuess();
-  for (const s of roster.sessions) box.append(sessionView(s, nowMin));
+  roster.sessions.forEach((s, i) => box.append(sessionView(s, nowMin, i + 1)));
+  alarmCard();
+}
+
+// ---- 회차 알림 (부스 기기는 하루 종일 켜 두므로 화면 안 알림이 닿는다) ----
+function alarmCard() {
+  const box = clear($('#alarm-card'));
+  const on = alarm.on();
+  const perm = 'Notification' in window ? Notification.permission : 'unsupported';
+  box.append(h('div', { class: 'row', style: 'align-items:center' },
+    h('div', { style: 'flex:3' }, h('b', {}, on ? '🔔 회차 알림 켜짐' : '🔕 회차 알림 꺼짐'),
+      h('div', { class: 'muted', style: 'font-size:14px' }, on
+        ? `회차 시작 5분 전, 회차가 끝나고 강사 서명이 없을 때 진동·소리로 알려요.${perm === 'granted' ? ' 기기 알림창에도 떠요.' : ''} 이 화면을 켜 두세요.`
+        : '켜 두면 회차 시작 5분 전과 강사 서명이 빠졌을 때 알려 줘요.')),
+    h('button', { type: 'button', class: `btn small${on ? '' : ' primary'}`, style: 'flex:none', onclick: async () => {
+      if (on) alarm.disable(); else await alarm.enable();
+      alarmCard();
+    } }, on ? '끄기' : '알림 켜기')));
+}
+
+// 한꺼번에 여러 알림이 오면(예: 앞 회차 서명 + 다음 회차 시작) 모두 쌓아 보여 준다
+let shown = [];
+
+function drawAlerts() {
+  const box = clear($('#alert-banner'));
+  box.classList.toggle('hidden', !shown.length);
+  shown.forEach(a => {
+    const isSign = a.key.startsWith('sign|');
+    box.append(h('div', { class: 'alert-item' }, h('b', {}, a.title), h('div', {}, a.body),
+      h('div', { class: 'row', style: 'margin-top:8px' },
+        h('button', { type: 'button', class: 'btn small primary', onclick: () => {
+          shown = shown.filter(x => x !== a);
+          drawAlerts();
+          open.clear(); open.add(a.session.id); render();
+          const idx = roster ? roster.sessions.findIndex(x => x.id === a.session.id) : -1;
+          if (isSign && idx >= 0) sign(roster.sessions[idx], '주강사', idx + 1);
+        } }, isSign ? '지금 서명하기' : '명단 열기'),
+        h('button', { type: 'button', class: 'btn small', onclick: () => { shown = shown.filter(x => x !== a); drawAlerts(); } }, '확인'))));
+  });
+}
+
+function showAlert(a) {
+  shown.push(a);
+  drawAlerts();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function tick() {
+  if (!roster) return;
+  alarm.fire(boothAlerts(roster.sessions, nowMinGuess()), showAlert);
 }
 
 function takeRoster(r) {
@@ -131,6 +211,7 @@ function takeRoster(r) {
   for (const op of queue) {
     for (const s of roster.sessions) {
       if (op.t === 'walkin' && s.id === op.sessionId) s.list.push({ rid: `tmp-${op.opId}`, label: op.pid || op.label, size: op.size, route: '현장접수', status: '참여', pending: true });
+      if (op.t === 'sign' && s.id === op.sessionId) applySign(s, op);
       const p = s.list.find(x => x.rid === op.rid);
       if (p) p.status = op.t === 'check' ? '참여' : (p.route === '자동배정' ? '배정' : '예약');
     }
@@ -176,6 +257,8 @@ if (!boothNo || !token) {
   render();
   sync();
   setInterval(sync, 30000);
+  setInterval(tick, 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
   document.addEventListener('focusout', () => setTimeout(() => { if (renderLater && !typing()) { renderLater = false; render(); } }, 0));
   window.addEventListener('online', sync);
   window.addEventListener('offline', () => setNet(false));

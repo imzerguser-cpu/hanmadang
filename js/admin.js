@@ -178,7 +178,8 @@ $('#dump').addEventListener('click', e => busy(e.target, async () => {
   const stamp = d.printedAt.slice(0, 16).replace(/[-: ]/g, '');
   downloadCsv(`한마당_신청자_${stamp}.csv`, d.신청자);
   downloadCsv(`한마당_기록_${stamp}.csv`, d.기록);
-  toast(`내려받았어요: 신청자 ${d.신청자.length}줄, 기록 ${d.기록.length}줄`);
+  if (d.강사서명 && d.강사서명.length) downloadCsv(`한마당_강사서명_${stamp}.csv`, d.강사서명);
+  toast(`내려받았어요: 신청자 ${d.신청자.length}줄, 기록 ${d.기록.length}줄, 강사 서명 ${(d.강사서명 || []).length}건`);
 }));
 $('#purge').addEventListener('click', e => busy(e.target, async () => {
   const r = await admin('admin.purge', { confirm: $('#purge-confirm').value.trim() });

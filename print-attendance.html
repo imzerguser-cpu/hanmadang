@@ -63,7 +63,9 @@
     function sheet(b, printed) {
       const times = b.sessions.map(s => s.start);
       const lastEnd = Math.max(...b.sessions.map(s => s.end));
-      const regRows = b.sessions.map((s, i) => `<tr><td>${i + 1}회차</td><td>${fmtTime(s.start)}~${fmtTime(s.end)}</td><td class="sign"></td><td class="sign"></td></tr>`).join('');
+      // 부스 화면에서 받은 전자 서명이 있으면 그림과 이름을 넣고, 없으면 손으로 서명할 빈칸
+      const signCell = g => (g && /^data:image\/png;base64,[A-Za-z0-9+\/=]+$/.test(g.img)) ? `<td class="sign"><img src="${g.img}" alt="서명" style="height:9mm;display:block;margin:0 auto"><small>${esc(g.name)}</small></td>` : `<td class="sign"></td>`;
+      const regRows = b.sessions.map((s, i) => `<tr><td>${i + 1}회차</td><td>${fmtTime(s.start)}~${fmtTime(s.end)}</td>${signCell((s.signs || {})['주강사'])}${signCell((s.signs || {})['보조강사'])}</tr>`).join('');
       const head = '<tr><th style="width:8mm">번호</th><th>학교명</th><th style="width:11mm">학년</th><th>별명(참고)</th><th>이름(현장 기입)</th><th style="width:9mm">확인</th></tr>';
       const sessions = b.sessions.map((s, i) => {
         const pre = s.list.filter(p => p.route !== '현장접수');

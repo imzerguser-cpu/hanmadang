@@ -1,11 +1,11 @@
 // 화면 파일을 기기에 저장해 인터넷이 없어도 운영자 화면 등이 다시 열리게 한다.
 // 서버(Apps Script) 요청은 저장하지 않는다. 화면 파일을 고치면 VERSION 을 올린다.
-const VERSION = 'hanmadang-1791814761618';
+const VERSION = 'hanmadang-1791816121088';
 const SHELL = [
   './', 'index.html', 'booth.html', 'schedule.html', 'live.html', 'apply.html', 'class.html', 'lecture.html',
   'css/app.css',
   'js/api.js', 'js/settings.js', 'js/util.js', 'js/store.js', 'js/clock.js', 'js/floorplan.js', 'js/recommend.js',
-  'js/prefs-model.js', 'js/prefs-ui.js', 'js/student-code.js', 'js/alarm.js', 'js/alarm-rules.js', 'js/booth.js', 'js/schedule.js', 'js/live.js', 'js/apply.js', 'js/class.js', 'js/lecture.js',
+  'js/prefs-model.js', 'js/prefs-ui.js', 'js/student-code.js', 'js/alarm.js', 'js/alarm-rules.js', 'js/signpad.js', 'js/booth.js', 'js/schedule.js', 'js/live.js', 'js/apply.js', 'js/class.js', 'js/lecture.js',
 ];
 
 self.addEventListener('install', e => {
@@ -29,12 +29,11 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// 체험 시간 알림을 누르면 일정 화면으로
+// 부스 운영자 알림을 누르면 운영자 화면으로
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || 'schedule.html';
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-    const open = list.find(c => c.url.includes('schedule.html'));
-    return open ? open.focus() : self.clients.openWindow(url);
+    const open = list.find(c => c.url.includes('booth.html'));
+    return open ? open.focus() : self.clients.openWindow('booth.html');
   }));
 });
