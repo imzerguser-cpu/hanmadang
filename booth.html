@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>부스 운영 · 오(5)길잘했어!</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main class="wrap">
+    <div class="row" style="align-items:center;margin-top:4px">
+      <div style="flex:3">
+        <div class="muted" style="font-size:14px">부스 운영</div>
+        <h1 id="title" style="margin:0">불러오는 중…</h1>
+        <div class="muted" id="place"></div>
+      </div>
+      <span class="net" id="net" style="flex:none">연결됨</span>
+    </div>
+    <div id="emergency" class="notice hidden" style="margin-top:10px">비상 모드: 학부모·주민은 휴대폰 대신 여기서 접수해 주세요(참가번호 또는 이름).</div>
+    <div id="error" class="error-box hidden"></div>
+    <p class="muted" style="font-size:14px">학생이 오면 이름을 찾아 <b>[참여 확인]</b>을 누르세요. 그 학생 휴대폰에 도장이 찍혀요. 인터넷이 끊겨도 기록은 이 기기에 남았다가 연결되면 자동으로 올라가요.</p>
+    <div id="sessions"></div>
+  </main>
+  <script type="module" src="js/booth.js"></script>
+</body>
+</html>

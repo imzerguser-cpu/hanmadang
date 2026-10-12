@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <title>QR 안내물 · 오(5)길잘했어!</title>
+  <script src="vendor/qrcode.js"></script>
+  <style>
+    @page { size: A4 portrait; margin: 12mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 11pt/1.5 "Malgun Gothic", "Noto Sans KR", sans-serif; color: #111; background: #eee; }
+    .bar { position: sticky; top: 0; background: #1f3a68; color: #fff; padding: 10px 16px; display: flex; gap: 10px; align-items: center; z-index: 2; }
+    .bar button { font: inherit; padding: 8px 14px; min-height: 44px; border: 0; border-radius: 8px; background: #fff; color: #203b37; cursor: pointer; }
+    .page { background: #fff; width: 210mm; min-height: 297mm; margin: 12px auto; padding: 14mm; break-after: page; page-break-after: always; }
+    .band { display: grid; grid-template-columns: repeat(5, 1fr); height: 6px; margin-bottom: 10mm; }
+    .band span:nth-child(1) { background: #f2c200; } .band span:nth-child(2) { background: #5b7fd6; } .band span:nth-child(3) { background: #2f9e5b; }
+    .band span:nth-child(4) { background: #f07a2a; } .band span:nth-child(5) { background: #a25cc2; }
+    h1 { font-size: 22pt; margin: 0 0 4mm; }
+    .qr svg { width: 100%; height: auto; display: block; }
+    .big { width: 90mm; margin: 10mm auto; }
+    .url { font-family: Consolas, monospace; font-size: 9pt; word-break: break-all; color: #333; }
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+    .card { border: 1px solid #999; border-radius: 3mm; padding: 5mm; break-inside: avoid; }
+    .card .qr { width: 36mm; margin: 0 auto 3mm; }
+    .warn { color: #b42318; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; } td, th { border: 1px solid #999; padding: 4px 8px; }
+    .code { font-family: Consolas, monospace; font-weight: 700; letter-spacing: 1px; }
+    ol { padding-left: 18px; margin: 4px 0; font-size: 10pt; }
+    .card { border-top: 3px solid #205b49; }
+    .band { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    h1 { letter-spacing: -.6px; line-height: 1.3; }
+    tr { break-inside: avoid; }
+    th { background: #f0f3ed; }
+    .page:last-child { break-after: auto; page-break-after: auto; }
+    @media print { body { background: #fff; } .bar { display: none; } .page { margin: 0; width: auto; min-height: 0; padding: 0; } }
+  </style>
+</head>
+<body>
+  <div class="bar"><b id="info">불러오는 중…</b><span style="flex:1"></span><button type="button" onclick="print()">인쇄 / PDF 저장</button></div>
+  <div id="pages"></div>
+  <script type="module">
+    import { call } from './js/api.js';
+    import { load } from './js/store.js';
+
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const qr = text => { const q = window.qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); };
+    const base = location.href.replace(/[^/]*$/, '');   // 이 누리집 주소 (화면 파일이 있는 곳)
+    const band = '<div class="band"><span></span><span></span><span></span><span></span><span></span></div>';
+
+    try {
+      const key = load('admin.key');
+      if (!key) throw new Error('관리 화면에서 먼저 관리자 키로 들어오세요.');
+      const sec = await call('admin.secrets', { key });
+      const home = base + 'index.html';
+      const pages = [];
+      // 1. 학교별 학생 안내장 — 학교마다 학생 안내코드가 다르다. QR에 코드가 들어 있어 찍으면 코드가 채워진다
+      for (const sc of sec.schools.filter(x => x.studentCode)) {
+        const link = `${base}apply.html?code=${encodeURIComponent(sc.studentCode)}`;
+        pages.push(`<section class="page">${band}
+          <p style="margin:0">「오(5)길 잘했어!」 2026 함께 성장 서천교육한마당 · 11월 4일(수) 서천미래교육지원센터</p>
+          <h1>${esc(sc.name)} 학생 체험 신청</h1>
+          <p>체험마다 <b>참여 선호도</b>(5점 꼭 하고 싶어요 ~ 1점 하고 싶지 않아요)를 주면, 마감 뒤 누구나 <b>꼭 하고 싶은 체험 하나는 꼭 하고</b>, 되도록 <b>다섯 길을 모두</b> 돌 수 있게 시간표와 길 안내를 짜 드려요.</p>
+          <div class="qr big">${qr(link)}</div>
+          <p style="text-align:center;font-size:14pt">학생 안내코드 <b class="code" style="font-size:20pt">${esc(sc.studentCode)}</b></p>
+          <p style="text-align:center" class="url">${esc(base)} → 학생 체험 신청</p>
+          <ul><li>안내코드, 학년, <b>별명</b>(실명 말고), 비밀번호 4자리만 넣어요. 이름 같은 개인정보는 받지 않아요.</li>
+          <li>초등(오전) 신청 마감: 11월 3일(화) 18:00 · 중·고(오후): 11월 4일(수) 09:00</li>
+          <li>휴대폰이 없으면 담임 선생님의 학급 신청이나 당일 부스 현장 접수를 이용하세요.</li>
+          <li>행사 당일에는 같은 주소의 '내 체험 일정·길 안내'에서 같은 코드·별명·비밀번호로 들어가 다섯 길 도장을 모으세요.</li></ul>
+        </section>`);
+      }
+      // 2. 부스 운영자용 (부스 책상 비치) — 한 쪽에 4개씩
+      const ops = [...sec.booths.filter(b => typeof b.no === 'number' && b.no <= 57), ...sec.lectures.map(l => ({ no: l.id, name: l.name, token: l.token }))];
+      for (let i = 0; i < ops.length; i += 4) {
+        pages.push(`<section class="page">${band}<h1 style="font-size:16pt">부스 운영자 화면 QR</h1>
+          <p class="warn">운영자 전용 주소입니다. 학생·교사·학교에 안내하지 말아 주세요.</p>
+          <div class="cards">${ops.slice(i, i + 4).map(b => {
+            const url = `${base}booth.html?b=${encodeURIComponent(b.no)}&t=${encodeURIComponent(b.token)}`;
+            return `<div class="card"><div class="qr">${qr(url)}</div><b style="font-size:14pt">${esc(b.no)}. ${esc(b.name)}</b>
+              <ol><li>행사 전에 이 QR로 한 번 열어 두세요(인터넷 없이도 다시 열려요).</li>
+              <li>회차를 누르면 명단이 나와요.</li><li>학생이 오면 <b>[참여 확인]</b> → 학생 휴대폰에 도장.</li>
+              <li>예약 없이 온 사람은 아래 <b>현장 접수</b>(참가번호·모둠 코드 또는 이름).</li></ol>
+              <p class="url">${esc(url)}</p></div>`;
+          }).join('')}</div></section>`);
+      }
+      // 3. 학교별 코드 표 (교육지원청 보관용)
+      pages.push(`<section class="page">${band}<h1 style="font-size:16pt">학교별 코드</h1>
+        <p><b>선생님 학교 코드</b>는 담임교사 학급 신청용이라 <b>선생님에게만</b> 안내하세요(학생이 알면 학급 신청을 고칠 수 있어요). <b>학생 안내코드</b>는 학생 안내장에 인쇄해 나눠 줍니다.</p>
+        <p>학급 신청 주소: <span class="url">${esc(base + 'class.html')}</span></p>
+        <table><tr><th>학교</th><th>선생님 학교 코드</th><th>학생 안내코드</th></tr>${sec.schools.map(s => `<tr><td>${esc(s.name)}</td><td class="code">${esc(s.code)}</td><td class="code">${esc(s.studentCode || '')}</td></tr>`).join('')}</table></section>`);
+      document.getElementById('pages').innerHTML = pages.join('');
+      document.getElementById('info').textContent = `안내물 ${pages.length}쪽 (학교별 학생 안내장 · 부스 운영자 QR · 학교별 코드 표)`;
+    } catch (err) {
+      document.getElementById('info').textContent = err.message;
+    }
+  </script>
+</body>
+</html>

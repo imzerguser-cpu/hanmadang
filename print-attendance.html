@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <title>출석부 출력 · 오(5)길잘했어!</title>
+  <style>
+    /* A4 세로 출석부: 회차 단위로 쪽을 넘기고 서명 공간을 유지한다. */
+    @page { size: A4 portrait; margin: 12mm 12mm 14mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 10.5pt/1.45 "Malgun Gothic", "Noto Sans KR", sans-serif; color: #111; background: #eee; }
+    .bar { position: sticky; top: 0; background: #1f3a68; color: #fff; padding: 10px 16px; display: flex; gap: 10px; align-items: center; z-index: 2; }
+    .bar button { font: inherit; padding: 8px 14px; min-height: 44px; border: 0; border-radius: 8px; background: #fff; color: #203b37; cursor: pointer; }
+    .sheet { background: #fff; width: 210mm; min-height: 297mm; margin: 12px auto; padding: 12mm; page-break-after: always; break-after: page; }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; border-bottom: 2px solid #111; padding-bottom: 6px; }
+    .head h1 { font-size: 13pt; margin: 0; }
+    .head h1 small { display: block; font-size: 10pt; font-weight: 400; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #555; padding: 3px 5px; text-align: center; vertical-align: middle; height: 7mm; }
+    th { background: #f0f0f0; font-weight: 700; }
+    .approve { width: 46mm; flex: 0 0 46mm; }
+    .approve td { height: 14mm; width: 23mm; }
+    h2 { font-size: 11pt; margin: 10px 0 4px; }
+    .left { text-align: left; }
+    .split { display: grid; grid-template-columns: 1fr; gap: 3mm; }
+    .session { break-inside: avoid; page-break-inside: avoid; margin-top: 4mm; }
+    .session h3 { font-size: 10.5pt; margin: 0 0 2px; }
+    .foot { margin-top: 6mm; font-size: 9pt; display: flex; justify-content: space-between; border-top: 1px solid #999; padding-top: 3px; }
+    .sign { width: 30mm; }
+    .head, .approve, tr { break-inside: avoid; page-break-inside: avoid; }
+    h2, .session h3, caption { break-after: avoid; }
+    .split > table { table-layout: fixed; overflow-wrap: anywhere; }
+    .split > table th, .split > table td { font-size: 9pt; padding: 3px; }
+    .foot { gap: 4mm; flex-wrap: wrap; }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+    @media print { body { background: #fff; } .bar { display: none; } .sheet { margin: 0; width: auto; min-height: 0; padding: 0; } }
+  </style>
+</head>
+<body>
+  <div class="bar"><b id="info">불러오는 중…</b><span style="flex:1"></span><button type="button" onclick="print()">인쇄 / PDF 저장</button></div>
+  <div id="sheets"></div>
+  <script type="module">
+    import { call } from './js/api.js';
+    import { load } from './js/store.js';
+    import { fmtTime } from './js/util.js';
+
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const period = new URLSearchParams(location.search).get('period') || '';
+
+    function printedLabel(stamp) {   // '2026-11-03 20:12:05' → '2026. 11. 3. 오후 8:12'
+      const m = String(stamp).match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/);
+      if (!m) return stamp;
+      const hh = Number(m[4]);
+      return `${m[1]}. ${Number(m[2])}. ${Number(m[3])}. ${hh < 12 ? '오전' : '오후'} ${hh % 12 || 12}:${m[5]}`;
+    }
+
+    function rows(list, blank) {
+      const out = list.map((p, i) => `<tr><td>${i + 1}</td><td class="left">${esc(p.school)}</td><td>${esc(p.grade)}</td><td class="left"><small>${esc(p.nick || '')}${p.group ? ` (${esc(p.group)})` : ''}</small></td><td></td><td>${p.checked ? '✓' : ''}</td></tr>`);
+      for (let i = 0; i < blank; i++) out.push('<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>');
+      return out.join('');
+    }
+
+    function sheet(b, printed) {
+      const times = b.sessions.map(s => s.start);
+      const lastEnd = Math.max(...b.sessions.map(s => s.end));
+      const regRows = b.sessions.map((s, i) => `<tr><td>${i + 1}회차</td><td>${fmtTime(s.start)}~${fmtTime(s.end)}</td><td class="sign"></td><td class="sign"></td></tr>`).join('');
+      const head = '<tr><th style="width:8mm">번호</th><th>학교명</th><th style="width:11mm">학년</th><th>별명(참고)</th><th>이름(현장 기입)</th><th style="width:9mm">확인</th></tr>';
+      const sessions = b.sessions.map((s, i) => {
+        const pre = s.list.filter(p => p.route !== '현장접수');
+        const walk = s.list.filter(p => p.route === '현장접수');
+        const blank = Math.max(4, s.capacity - pre.length - walk.length);
+        return `<div class="session"><h3>${i + 1}회차 ${fmtTime(s.start)}~${fmtTime(s.end)} · 정원 ${s.capacity}명 · 사전 ${pre.length}명</h3>
+          <div class="split">
+            <table><caption class="left" style="font-size:9pt">사전 신청 명단</caption>${head}${rows(pre, Math.max(0, 3 - pre.length))}</table>
+            <table><caption class="left" style="font-size:9pt">현장 접수 (수기)</caption>${head}${rows(walk, blank)}</table>
+          </div></div>`;
+      }).join('');
+      return `<section class="sheet">
+        <div class="head">
+          <h1>「오(5)길 잘했어!」 2026 서천교육한마당<small>강사등록, 지도일지, 학생출석부</small></h1>
+          <table class="approve"><tr><th>장학사</th><th>전결 11. 4.</th></tr><tr><td></td><td></td></tr></table>
+        </div>
+        <h2>① 강사 등록부 — ${esc(b.no)}. ${esc(b.name)}</h2>
+        <table>
+          <tr><th style="width:24mm">일자</th><td class="left" colspan="3">2026년 11월 4일 수요일</td></tr>
+          <tr><th>수업 시간</th><td class="left" colspan="3">${fmtTime(Math.min(...times))}~${fmtTime(lastEnd)} (${b.sessions.length}회차) · ${esc(b.place)}${b.org ? ` · 운영: ${esc(b.org)}` : ''}</td></tr>
+          <tr><th>회차</th><th>시간</th><th>주강사 서명</th><th>보조강사 서명</th></tr>
+          ${regRows}
+        </table>
+        <h2>② 지도일지</h2>
+        <table>
+          <tr><th style="width:24mm">부스 제목</th><td class="left">${esc(b.name)} <small>(${esc(b.gil)})</small></td></tr>
+          <tr><th>체험 내용</th><td class="left" style="height:16mm">${esc(b.content) || '&nbsp;'}</td></tr>
+          <tr><th>주강사</th><td class="left">${esc(b.teacher) || '&nbsp;'}</td></tr>
+        </table>
+        <h2>③ 학생 출석부</h2>
+        ${sessions}
+        <div class="foot"><span>※ 사전 신청 명단은 학교·학년·별명까지 인쇄. 실명은 현장에서 기입. 현장 등록은 수기로 작성.</span><span>부스 ${esc(b.no)} · 출력 ${printed}</span></div>
+      </section>`;
+    }
+
+    try {
+      const key = load('admin.key');
+      if (!key) throw new Error('관리 화면에서 먼저 관리자 키로 들어오세요.');
+      const data = await call('admin.attendance', { key, period });
+      const printed = printedLabel(data.printedAt);
+      document.getElementById('info').textContent = `출석부 ${period || '전체'} · 부스 ${data.booths.length}곳 · 출력 ${printed}`;
+      document.getElementById('sheets').innerHTML = data.booths.map(b => sheet(b, printed)).join('');
+    } catch (err) {
+      document.getElementById('info').textContent = err.message;
+    }
+  </script>
+</body>
+</html>

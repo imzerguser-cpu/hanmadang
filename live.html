@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>현장 예약 · 오(5)길잘했어! 2026 서천교육한마당</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="top"><a href="index.html">← 처음으로</a><span style="flex:1"></span><button class="btn small hidden" id="logout" type="button">다른 사람으로</button></header>
+
+    <section id="login">
+      <h1>학부모·주민 현장 예약</h1>
+      <p class="lead">아직 안 해 본 길의 체험 가운데 <b>지금 바로 참여할 수 있는 곳</b>을 길마다 3개씩 추천해 드려요. 다섯 길 도장을 모아 보세요.</p>
+      <div class="row" style="margin:12px 0">
+        <button class="btn" type="button" data-mode="new" aria-pressed="true">처음 왔어요</button>
+        <button class="btn" type="button" data-mode="old" aria-pressed="false">참가번호가 있어요</button>
+      </div>
+      <form id="form-new" class="card">
+        <label class="field">이름 또는 별명<input id="name" maxlength="20"></label>
+        <label class="field">비밀번호 4자리<span class="hint">예약을 확인·취소할 때 써요.</span><input id="pin-new" type="password" inputmode="numeric" maxlength="4"></label>
+        <p class="muted" style="font-size:14px">부스에서 나를 부를 때만 써요. 별명이어도 괜찮아요.</p>
+        <button class="btn primary block" id="go-new" type="submit">참가번호 받기</button>
+      </form>
+      <form id="form-old" class="card hidden">
+        <label class="field">참가번호<input id="pid" maxlength="5" placeholder="예: L0012" autocapitalize="characters"></label>
+        <label class="field">비밀번호 4자리<input id="pin-old" type="password" inputmode="numeric" maxlength="4"></label>
+        <button class="btn primary block" id="go-old" type="submit">들어가기</button>
+      </form>
+    </section>
+
+    <section id="view" class="hidden">
+      <div class="card row" style="align-items:center">
+        <div style="flex:2"><div class="muted" style="font-size:14px">참가번호</div><div class="code" id="my-id"></div></div>
+        <div style="flex:3;text-align:right" id="my-name"></div>
+      </div>
+      <div id="emergency" class="notice hidden">지금은 부스에서 직접 접수해요. 가고 싶은 부스에서 운영자에게 <b>참가번호</b>를 알려 주세요.</div>
+      <div class="card">
+        <b>다섯 길 도장판</b>
+        <div id="stamps" class="stamps"></div>
+      </div>
+
+      <h2>내 예약</h2>
+      <div id="mine"><p class="muted">아직 예약이 없어요.</p></div>
+
+      <h2>지금 바로 참여 가능</h2>
+      <label class="field" style="margin-top:0">지금 있는 곳<select id="here"></select></label>
+      <div class="sorts" id="sorts"></div>
+      <div id="recs"></div>
+
+      <div id="map-box" class="card hidden">
+        <b id="map-title"></b>
+        <p id="map-dir" class="muted" style="margin:4px 0 8px"></p>
+        <div id="map"></div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="js/live.js"></script>
+</body>
+</html>

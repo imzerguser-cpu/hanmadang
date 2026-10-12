@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>특강 예약 · 오(5)길잘했어! 2026 서천교육한마당</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="top"><a href="index.html">← 처음으로</a></header>
+    <h1>소통 특강 사전 예약</h1>
+    <p class="lead">특강마다 자리의 절반은 사전 예약, 절반은 당일 현장 접수로 받아요. 한 사람(한 학급)은 특강 한 가지만 예약할 수 있어요.</p>
+    <div id="period" class="notice"></div>
+
+    <h2>특강 목록</h2>
+    <div id="list"></div>
+
+    <form id="book" class="card">
+      <h2 style="margin-top:0">예약하기</h2>
+      <label class="field">특강<select id="lecture" required></select></label>
+      <fieldset style="border:0;padding:0;margin:12px 0">
+        <legend style="font-weight:600">누가 예약하나요?</legend>
+        <div class="row">
+          <label class="check"><input type="radio" name="type" value="개인" checked> 학생</label>
+          <label class="check"><input type="radio" name="type" value="학급"> 선생님(학급)</label>
+          <label class="check"><input type="radio" name="type" value="학부모주민"> 학부모·주민</label>
+        </div>
+      </fieldset>
+      <div id="who"></div>
+      <label class="field">비밀번호 4자리<span class="hint">예약을 확인하거나 취소할 때 써요.</span>
+        <input id="pin" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required></label>
+      <p class="muted" style="font-size:14px">실명은 받지 않아요. 학생은 별명, 학부모·주민은 이름이나 별명을 써 주세요.</p>
+      <button class="btn primary block" id="book-go" type="submit">예약하기</button>
+    </form>
+    <div id="booked" class="done-box hidden"></div>
+
+    <form id="mine" class="card">
+      <h2 style="margin-top:0">내 예약 확인·취소</h2>
+      <p class="muted" style="font-size:14px">위의 '누가 예약하나요?'와 같은 정보, 비밀번호를 넣고 눌러 주세요. 학부모·주민은 참가번호를 넣어요.</p>
+      <button class="btn block" id="mine-go" type="submit">내 예약 보기</button>
+      <div id="mine-list"></div>
+    </form>
+  </main>
+  <script type="module" src="js/lecture.js"></script>
+</body>
+</html>

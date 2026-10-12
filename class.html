@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>학급 신청 · 오(5)길잘했어! 2026 서천교육한마당</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="top"><a href="index.html">← 처음으로</a></header>
+
+    <section id="step-login">
+      <h1>담임 선생님 학급 신청</h1>
+      <p class="lead">학급을 모둠으로 나누고, 모둠마다 5길 체험 선호를 내 주세요. 모둠은 함께 움직이는 단위예요. 한 회차 정원(8~15명)보다 작게 나눠 주세요.</p>
+      <form id="login" class="card">
+        <label class="field">학교 코드<span class="hint">교육지원청에서 학교마다 따로 안내한 6자리 코드</span>
+          <input id="code" maxlength="6" autocapitalize="characters" required></label>
+        <button class="btn primary block" id="login-go" type="submit">들어가기</button>
+      </form>
+    </section>
+
+    <section id="step-class" class="hidden">
+      <h1 id="school-name"></h1>
+      <form id="pick-class" class="card">
+        <div class="row">
+          <label class="field">학년<select id="grade" required></select></label>
+          <label class="field">반<input id="cls" inputmode="numeric" maxlength="3" required></label>
+        </div>
+        <button class="btn primary block" id="class-go" type="submit">이 학급 신청하기</button>
+      </form>
+    </section>
+
+    <section id="step-groups" class="hidden">
+      <h1 id="class-title"></h1>
+      <div class="card">
+        <h2 style="margin-top:0">1. 모둠 나누기</h2>
+        <details>
+          <summary>학급 명단을 붙여 넣고 자동으로 나누기</summary>
+          <label class="field">학급 명단 <span class="hint">실명 대신 별명이나 번호(1번, 2번…)로, 한 줄에 한 명 또는 쉼표로 구분</span><textarea id="roster-all"></textarea></label>
+          <div class="row">
+            <label class="field">모둠 수<input id="split-n" type="number" min="1" max="12" value="3"></label>
+            <button class="btn" id="split-go" type="button" style="align-self:end;margin-bottom:12px">나누기</button>
+          </div>
+        </details>
+        <div id="groups"></div>
+        <button class="btn block" id="add-group" type="button">+ 모둠 추가</button>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0">2. 5길 체험 선호</h2>
+        <p class="muted" style="font-size:15px">학급 공통으로 한 번 고르면 모든 모둠에 들어가요. 모둠마다 다르게 하려면 아래에서 그 모둠을 골라 따로 고르세요.</p>
+        <label class="field">고를 대상<select id="target"></select></label>
+        <label class="check"><input type="checkbox" id="quick"> 빠른 신청 (꼭 하고 싶은 것만 고르기)</label>
+      </div>
+      <div id="prefs"></div>
+    </section>
+
+    <section id="step-done" class="hidden">
+      <h1>학급 신청을 저장했어요</h1>
+      <div class="done-box" id="done-msg"></div>
+      <h2>모둠 코드</h2>
+      <p class="muted">배정 결과가 공개되면 모둠 코드로 그 모둠의 체험 시간표와 길 안내를 볼 수 있어요. 모둠장 학생에게 알려 주세요.</p>
+      <div class="card"><table class="simple" id="codes"></table></div>
+      <div class="row no-print">
+        <button class="btn" id="print" type="button">인쇄</button>
+        <button class="btn" id="edit-again" type="button">다시 고치기</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="bottom-bar hidden" id="bar">
+    <div class="inner">
+      <div id="bar-progress" class="progress"></div>
+      <button class="btn" id="next" type="button">다음 길</button>
+      <button class="btn primary" id="save" type="button" disabled>저장하기</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/class.js"></script>
+</body>
+</html>

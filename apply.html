@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>체험 신청 · 오(5)길잘했어! 2026 서천교육한마당</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="top"><a href="index.html">← 처음으로</a></header>
+
+    <section id="step-info">
+      <h1>5길 체험 신청</h1>
+      <p class="lead">체험마다 <b>참여 선호도</b>를 점수로 주세요. 5점은 꼭 하고 싶어요, 1점은 하고 싶지 않아요. 마감 뒤 모든 신청을 모아, 누구나 <b>꼭 하고 싶은 체험 하나는 꼭 하고</b>, 되도록 <b>다섯 길을 모두</b> 돌 수 있게 체험 순서와 시간을 짜서 길 안내까지 해 드려요.</p>
+      <div id="deadlines" class="notice"></div>
+
+      <form id="info" class="card" autocomplete="off">
+        <label class="field">학생 안내코드<span class="hint">학교에서 받은 안내장에 적힌 6자리 (예: K7P2QM)</span>
+          <input id="code" maxlength="6" autocapitalize="characters" autocomplete="off" required></label>
+        <label class="field">학년<select id="grade" required></select></label>
+        <label class="field">별명<span class="hint">실명 말고 나만 알아볼 별명을 써요. 행사 날 이 별명으로 내 일정을 봐요.</span>
+          <input id="name" maxlength="20" required></label>
+        <label class="field">비밀번호 4자리
+          <span class="hint">신청 내용을 고치거나 배정 결과를 볼 때 써요. 잊지 마세요.</span>
+          <input id="pin" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required>
+        </label>
+        <button class="btn primary block" id="go" type="submit">다음</button>
+        <p class="muted" style="font-size:14px">이미 신청했다면 같은 코드·학년·별명과 비밀번호를 넣으면 신청한 내용을 불러와 고칠 수 있어요. 이름 같은 개인정보는 받지 않아요.</p>
+      </form>
+      <p class="muted" style="font-size:14px">휴대폰이 없다면 담임 선생님의 학급 신청이나 당일 부스 현장 접수를 이용하세요.</p>
+    </section>
+
+    <section id="step-prefs" class="hidden">
+      <h1 id="who"></h1>
+      <div class="card row" style="align-items:center">
+        <label class="check" style="flex:2"><input type="checkbox" id="quick"> 빠른 신청 (꼭 하고 싶은 것만 고르기)</label>
+      </div>
+      <div id="prefs"></div>
+    </section>
+
+    <section id="step-done" class="hidden">
+      <h1>신청을 마쳤어요</h1>
+      <div class="done-box" id="done-msg"></div>
+      <div id="done-warn" class="notice hidden" style="margin-top:12px"></div>
+      <h2>꼭 하고 싶다고 고른 체험 (5점)</h2>
+      <div id="done-list" class="card"></div>
+      <p class="muted">마감 전까지는 같은 코드·학년·별명과 비밀번호로 다시 들어와 고칠 수 있어요. 배정 결과는 행사 전날(중·고는 당일 아침)에 이 누리집에서 볼 수 있어요.</p>
+      <a class="btn block" href="index.html">처음으로</a>
+    </section>
+  </main>
+
+  <div class="bottom-bar hidden" id="bar">
+    <div class="inner">
+      <div id="bar-progress" class="progress"></div>
+      <button class="btn" id="next" type="button">다음 길</button>
+      <button class="btn primary" id="submit" type="button" disabled>신청하기</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/apply.js"></script>
+</body>
+</html>
