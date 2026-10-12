@@ -1,16 +1,16 @@
 // 5길 선호 상태와 검사. 화면(DOM)과 무관해서 Node에서도 시험한다.
-// 저장 값은 부스번호 → 순위(1 = 가장 하고 싶음 … 5 = 하고 싶지 않음). 엔진·서버와 같은 값이다.
-// 화면에는 '참여 선호도' 점수로 보여 준다: 점수 = 6 − 순위 (5점 = 꼭 하고 싶어요, 1점 = 안 하고 싶어요).
+// 저장 값은 부스번호 → 순위(1 = 선호도 가장 높음 … 5 = 가장 낮음). 엔진·서버와 같은 값이다.
+// 화면에는 '참여 선호도' 점수로 보여 준다: 점수 = 6 − 순위 (5점 = 선호도 가장 높음, 1점 = 가장 낮음). 점수에 말 표현은 붙이지 않는다.
 // 규칙은 서버 apps-script/src/30-apply.js 의 validatePrefs_ 와 같다.
 
 export const GIL_ORDER = ['성장하길', '꿈키우길', '지속하길', '마주하길', '함께하길'];
 
 export const RANKS = [
-  { rank: 1, score: 5, short: '꼭', label: '꼭 하고 싶어요' },
-  { rank: 2, score: 4, short: '좋아요', label: '하면 좋아요' },
-  { rank: 3, score: 3, short: '시간 되면', label: '시간이 되면 해도 좋아요' },
-  { rank: 4, score: 2, short: '별로', label: '굳이 하고 싶지 않아요' },
-  { rank: 5, score: 1, short: '안 할래요', label: '재미없을 것 같거나 많이 해 봤어요' },
+  { rank: 1, score: 5 },
+  { rank: 2, score: 4 },
+  { rank: 3, score: 3 },
+  { rank: 4, score: 2 },
+  { rank: 5, score: 1 },
 ];
 
 export const scoreOf = rank => 6 - rank;
@@ -65,7 +65,7 @@ export function setRank(prefs, gils, boothNo, rank) {
   }
   const c = countsFor(prefs, g);
   if (prefs[boothNo] !== rank && c[rank] >= limitOf(g, rank)) {
-    return { prefs, error: rank === 1 ? `${g.gil}에서 5점(꼭 하고 싶어요)은 ${g.need}개까지예요. 다른 5점을 먼저 빼 주세요.` : `${scoreOf(rank)}점은 ${g.max}개까지 줄 수 있어요.` };
+    return { prefs, error: rank === 1 ? `${g.gil}에서 5점은 ${g.need}개까지예요. 다른 5점을 먼저 빼 주세요.` : `${scoreOf(rank)}점은 ${g.max}개까지 줄 수 있어요.` };
   }
   next[boothNo] = rank;
   return { prefs: next };

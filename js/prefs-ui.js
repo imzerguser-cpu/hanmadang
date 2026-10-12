@@ -27,7 +27,7 @@ export function mountPrefs(container, { gils, prefs = {}, quick = false, onChang
     const mine = state[b.no];
     const card = h('div', { class: `booth${mine ? ` r${mine}` : ''}`, 'data-booth': b.no },
       h('div', { class: 'name' }, `${b.no}. ${b.name}`),
-      h('div', { class: 'meta' }, b.place, mine ? ` · ${RANKS[mine - 1].score}점 ${RANKS[mine - 1].label}` : ''),
+      h('div', { class: 'meta' }, b.place, mine ? ` · 선호도 ${RANKS[mine - 1].score}점` : ''),
     );
     if (quickMode) {
       card.setAttribute('role', 'button');
@@ -40,8 +40,8 @@ export function mountPrefs(container, { gils, prefs = {}, quick = false, onChang
       const full = st.counts[r.rank] >= (r.rank === 1 ? g.need : g.max) && mine !== r.rank;
       row.append(h('button', {
         type: 'button', class: 'rank-btn', 'aria-pressed': String(mine === r.rank), disabled: full,
-        title: `${r.score}점 ${r.label}`, onclick: () => choose(b.no, r.rank),
-      }, h('b', {}, `${r.score}점`), r.short));
+        title: `선호도 ${r.score}점`, onclick: () => choose(b.no, r.rank),
+      }, h('b', {}, `${r.score}점`)));
     }
     card.append(row);
     return card;
@@ -63,11 +63,11 @@ export function mountPrefs(container, { gils, prefs = {}, quick = false, onChang
     const g = gils[current];
     const st = all[current];
     const tip = quickMode
-      ? `꼭 하고 싶은 체험을 ${g.need}개 눌러 주세요. (선호도 5점)`
-      : `가장 하고 싶은 체험에 5점을 꼭 ${g.need}개 주세요. 4점~1점은 각각 ${g.max}개까지 줄 수 있어요. 점수를 안 준 부스는 '보통'으로 봐요.`;
+      ? `선호도 5점을 줄 체험을 ${g.need}개 눌러 주세요.`
+      : `점수가 높을수록 더 참여하고 싶은 체험이에요. 5점은 꼭 ${g.need}개 주세요. 4점~1점은 각각 ${g.max}개까지 줄 수 있어요. 점수를 안 준 부스는 '보통'으로 봐요.`;
     container.append(h('div', { class: 'gil-head', style: `--gil:${GIL_COLORS[g.gil]}` },
       h('b', {}, g.gil), ' ',
-      h('span', { class: 'muted' }, st.firstLeft > 0 ? `5점(꼭 하고 싶어요)을 ${st.firstLeft}개 더 주세요` : '5점을 다 줬어요 ✓'),
+      h('span', { class: 'muted' }, st.firstLeft > 0 ? `5점을 ${st.firstLeft}개 더 주세요` : '5점을 다 줬어요 ✓'),
       h('div', { class: 'muted', style: 'font-size:14px' }, tip),
     ));
     for (const b of g.booths) container.append(boothCard(g, b, st));

@@ -87,10 +87,10 @@ function renderResult(period, r) {
   const box = clear($('#result'));
   const labelOf = Object.fromEntries(exp.applicants.map(a => [a.id, a.label]));
   box.append(h('div', { class: 'tiles' },
-    tile('꼭 하고 싶은 체험(5점) 받음', pct(s.rateFirst), `${s.withFirst} / ${s.applicants}건`),
+    tile('선호도 5점 체험 받음', pct(s.rateFirst), `${s.withFirst} / ${s.applicants}건`),
     tile('다섯 길 완성', pct(s.rateComplete), `${s.complete5}건`),
     tile('학교별 5점 체험', `${s.schoolsWithFirst} / ${s.schools}교`),
-    tile('1점(안 할래요) 배정', `${s.rank5}건`),
+    tile('선호도 1점 배정', `${s.rank5}건`),
     tile('계산 시간', `${(r.ms / 1000).toFixed(1)}초`, r.errors.length ? `조건 위반 ${r.errors.length}건!` : '조건 위반 0건')));
   const hist = Object.entries(s.firstsHist).sort((a, b) => a[0] - b[0]).map(([k, v]) => `${k}개 ${v}건`).join(' · ');
   box.append(h('p', {}, h('b', {}, '5점 체험을 몇 개 받았나: '), hist));

@@ -7,7 +7,8 @@ const GRADES = {
 };
 
 // 시험용 가상 신청자. 인기 부스 쏠림을 흉내 내려고 부스마다 인기 무게를 둔다.
-export function makeApplicants({ booths, period, individuals = 300, groups = 80, seed = 1, quickRatio = 0.3, schools = 12 }) {
+// firstPicks: 길마다 5점(1순위) 개수 규칙. 기본은 engine/rules.js 의 FIRST_PICKS (3개, 지속하길 2개)
+export function makeApplicants({ booths, period, individuals = 300, groups = 80, seed = 1, quickRatio = 0.3, schools = 12, firstPicks }) {
   const rand = mulberry32(seed);
   const list = booths.filter(b => b.kind === '배정' && b.periods.includes(period));
   const byGil = new Map();
@@ -28,7 +29,7 @@ export function makeApplicants({ booths, period, individuals = 300, groups = 80,
         .sort((x, y) => y[1] - x[1])
         .map(x => x[0]);
       // 1순위는 길마다 정해진 개수(기본 3, 지속하길 2). 빠른 신청은 1순위만 고른다
-      const k = firstPickCount(ordered[0].gil, ordered.length);
+      const k = firstPickCount(ordered[0].gil, ordered.length, firstPicks);
       ordered.slice(0, k).forEach(b => { prefs[b.no] = 1; });
       if (quick) continue;
       const rest = ordered.slice(k);
