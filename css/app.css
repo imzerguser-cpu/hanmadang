@@ -29,6 +29,8 @@ p.lead, .muted { color: var(--muted); }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin: 12px 0; }
 label.field { display: block; margin: 12px 0; font-weight: 600; }
 label.field > span.hint { display: block; font-weight: 400; color: var(--muted); font-size: 14px; }
+label.field > span.hint.ok { color: var(--ok, #1b8a4b); font-weight: 700; }
+label.field > span.hint.bad { color: var(--danger, #c0392b); }
 input, select, textarea {
   width: 100%; font: inherit; padding: 12px; margin-top: 6px;
   border: 1px solid #c9ced6; border-radius: 10px; background: #fff; color: inherit;

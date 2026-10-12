@@ -16,9 +16,9 @@
       <div id="deadlines" class="notice"></div>
 
       <form id="info" class="card" autocomplete="off">
-        <label class="field">학생 안내코드<span class="hint">학교에서 받은 안내장에 적힌 6자리 (예: K7P2QM)</span>
-          <input id="code" maxlength="6" autocapitalize="characters" autocomplete="off" required></label>
-        <label class="field">학년<select id="grade" required></select></label>
+        <label class="field">학생 안내코드<span class="hint">학교에서 받은 안내장에 적힌 6자리 (예: K7P2QM). 학년마다 코드가 달라서 학년은 따로 고르지 않아요.</span>
+          <input id="code" maxlength="6" autocapitalize="characters" autocomplete="off" required>
+          <span class="hint" id="code-who" aria-live="polite"></span></label>
         <label class="field">별명<span class="hint">실명 말고 나만 알아볼 별명을 써요. 행사 날 이 별명으로 내 일정을 봐요.</span>
           <input id="name" maxlength="20" required></label>
         <label class="field">비밀번호 4자리
@@ -26,7 +26,7 @@
           <input id="pin" type="password" inputmode="numeric" pattern="\d{4}" maxlength="4" required>
         </label>
         <button class="btn primary block" id="go" type="submit">다음</button>
-        <p class="muted" style="font-size:14px">이미 신청했다면 같은 코드·학년·별명과 비밀번호를 넣으면 신청한 내용을 불러와 고칠 수 있어요. 이름 같은 개인정보는 받지 않아요.</p>
+        <p class="muted" style="font-size:14px">이미 신청했다면 같은 코드·별명과 비밀번호를 넣으면 신청한 내용을 불러와 고칠 수 있어요. 이름 같은 개인정보는 받지 않아요.</p>
       </form>
       <p class="muted" style="font-size:14px">휴대폰이 없다면 담임 선생님의 학급 신청이나 당일 부스 현장 접수를 이용하세요.</p>
     </section>

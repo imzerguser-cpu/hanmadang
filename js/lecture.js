@@ -1,5 +1,6 @@
 import { call, getConfig } from './api.js';
 import { h, $, clear, toast, busy, GRADE_OPTIONS, fmtTime, fmtDeadline, deadlineMs } from './util.js';
+import { attachCodeHint } from './student-code.js';
 
 let config;
 let lectures = [];
@@ -22,9 +23,11 @@ function renderWho() {
   const box = clear($('#who'));
   const t = type();
   if (t === '개인') {
-    box.append(field('학생 안내코드', h('input', { id: 'w-code', maxlength: '6', autocapitalize: 'characters' }), '학교 안내장의 6자리'),
-      field('학년', gradeSelect()),
+    const code = h('input', { id: 'w-code', maxlength: '6', autocapitalize: 'characters' });
+    const hint = h('span', { class: 'hint', 'aria-live': 'polite' });
+    box.append(h('label', { class: 'field' }, '학생 안내코드', h('span', { class: 'hint' }, '학교 안내장의 6자리 (학년마다 달라요)'), code, hint),
       field('별명', h('input', { id: 'w-name', maxlength: '20' }), '실명 말고 별명'));
+    attachCodeHint(code, hint);
   } else if (t === '학급') {
     box.append(field('학교 코드', h('input', { id: 'w-code', maxlength: '6', autocapitalize: 'characters' }), '교육지원청에서 안내한 6자리'),
       h('div', { class: 'row' }, field('학년', gradeSelect()), field('반', h('input', { id: 'w-cls', inputmode: 'numeric', maxlength: '3' }))),
@@ -38,7 +41,7 @@ function renderWho() {
 function readWho() {
   const t = type();
   const v = id => ($(`#${id}`) ? $(`#${id}`).value.trim() : '');
-  if (t === '개인') return { type: t, code: v('w-code').toUpperCase(), grade: v('w-grade'), name: v('w-name') };
+  if (t === '개인') return { type: t, code: v('w-code').toUpperCase(), name: v('w-name') };
   if (t === '학급') return { type: t, code: v('w-code').toUpperCase(), grade: v('w-grade'), cls: v('w-cls'), size: Number(v('w-size')) };
   const who = { type: t, name: v('w-name') };
   if (v('w-id')) who.id = v('w-id').toUpperCase();

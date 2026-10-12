@@ -1,6 +1,6 @@
 // 화면 파일을 기기에 저장해 인터넷이 없어도 운영자 화면 등이 다시 열리게 한다.
 // 서버(Apps Script) 요청은 저장하지 않는다. 화면 파일을 고치면 VERSION 을 올린다.
-const VERSION = 'hanmadang-1791807935089';
+const VERSION = 'hanmadang-1791814020137';
 const SHELL = [
   './', 'index.html', 'booth.html', 'schedule.html', 'live.html', 'apply.html', 'class.html', 'lecture.html',
   'css/app.css',

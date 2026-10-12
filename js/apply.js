@@ -1,5 +1,6 @@
 import { call, getConfig } from './api.js';
-import { h, $, clear, toast, busy, GRADE_OPTIONS, fmtDeadline, deadlineMs } from './util.js';
+import { h, $, clear, toast, busy, fmtDeadline, deadlineMs } from './util.js';
+import { lookupCode, attachCodeHint } from './student-code.js';
 import { gilsFor, periodOfGrade, allDone, cleanPrefs } from './prefs-model.js';
 import { mountPrefs, progressBar } from './prefs-ui.js';
 
@@ -17,9 +18,7 @@ function show(id) {
 function fillForm() {
   const fromLink = new URLSearchParams(location.search).get('code');   // 학교 안내장 QR에 코드가 들어 있다
   if (fromLink) $('#code').value = fromLink.toUpperCase();
-  const grade = $('#grade');
-  grade.append(h('option', { value: '' }, '학년'));
-  GRADE_OPTIONS.forEach(([v, label]) => grade.append(h('option', { value: v }, label)));
+  attachCodeHint($('#code'), $('#code-who'));
   const st = config.settings;
   $('#deadlines').append(
     h('div', {}, `초등(오전 체험) 신청 마감: `, h('b', {}, fmtDeadline(st['마감_오전']))),
@@ -39,18 +38,19 @@ function updateBar() {
 async function onInfo(e) {
   e.preventDefault();
   const info = {
-    code: $('#code').value.trim().toUpperCase(), grade: $('#grade').value,
+    code: $('#code').value.trim().toUpperCase(),
     name: $('#name').value.trim(), pin: $('#pin').value.trim(),
   };
-  if (!info.code || !info.grade || !info.name) { toast('안내코드·학년·별명을 넣어 주세요.', 'error'); return; }
+  if (!info.code || !info.name) { toast('안내코드와 별명을 넣어 주세요.', 'error'); return; }
   if (!/^\d{4}$/.test(info.pin)) { toast('비밀번호는 숫자 4자리예요.', 'error'); return; }
-  const period = periodOfGrade(info.grade);
-  const st = config.settings;
-  if (st['신청열림'] !== '예' || config.now >= deadlineMs(st[`마감_${period}`])) {
-    toast(`${period === '오전' ? '초등' : '중·고'} 신청이 마감되었어요. 당일 현장 접수를 이용해 주세요.`, 'error');
-    return;
-  }
   await busy($('#go'), async () => {
+    info.grade = (await lookupCode(info.code)).grade;   // 학년은 안내코드로 정해진다
+    const period = periodOfGrade(info.grade);
+    const st = config.settings;
+    if (st['신청열림'] !== '예' || config.now >= deadlineMs(st[`마감_${period}`])) {
+      toast(`${period === '오전' ? '초등' : '중·고'} 신청이 마감되었어요. 당일 현장 접수를 이용해 주세요.`, 'error');
+      return;
+    }
     let saved = {};
     try {
       saved = (await call('apply.get', info)).prefs;

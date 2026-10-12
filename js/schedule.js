@@ -1,5 +1,6 @@
 import { call, getConfig } from './api.js';
-import { h, $, clear, toast, busy, GRADE_OPTIONS, GIL_COLORS, fmtTime } from './util.js';
+import { h, $, clear, toast, busy, GIL_COLORS, fmtTime } from './util.js';
+import { attachCodeHint } from './student-code.js';
 import { syncClock, eventNowMin } from './clock.js';
 import { directions, mapSvg, room } from './floorplan.js';
 import { GIL_ORDER } from './prefs-model.js';
@@ -120,13 +121,11 @@ async function main() {
   if (config) store.save('schedule.config', config);
   const fromLink = new URLSearchParams(location.search).get('code');
   if (fromLink) $('#code').value = fromLink.toUpperCase();
-  const grade = $('#grade');
-  grade.append(h('option', { value: '' }, '학년'));
-  GRADE_OPTIONS.forEach(([v, l]) => grade.append(h('option', { value: v }, l)));
+  attachCodeHint($('#code'), $('#code-who'));
   document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
   $('#form-person').addEventListener('submit', e => {
     e.preventDefault();
-    login({ code: $('#code').value.trim().toUpperCase(), grade: $('#grade').value, name: $('#name').value.trim(), pin: $('#pin').value.trim() }, $('#go-person'));
+    login({ code: $('#code').value.trim().toUpperCase(), name: $('#name').value.trim(), pin: $('#pin').value.trim() }, $('#go-person'));
   });
   $('#form-group').addEventListener('submit', e => {
     e.preventDefault();

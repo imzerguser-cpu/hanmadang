@@ -113,8 +113,12 @@ async function onLogin(e) {
   e.preventDefault();
   await busy($('#login-go'), async () => {
     code = $('#code').value.trim().toUpperCase();
-    school = (await call('class.login', { code })).school;
+    const r = await call('class.login', { code });
+    school = r.school;
     $('#school-name').textContent = school;
+    const gradeSel = clear($('#grade'));
+    gradeSel.append(h('option', { value: '' }, '학년'));
+    GRADE_OPTIONS.filter(([v]) => r.grades.indexOf(v) >= 0).forEach(([v, label]) => gradeSel.append(h('option', { value: v }, label)));
     show('step-class');
   });
 }
@@ -176,9 +180,6 @@ async function main() {
     $('#step-login').prepend(h('div', { class: 'error-box' }, err.message));
     return;
   }
-  const gradeSel = $('#grade');
-  gradeSel.append(h('option', { value: '' }, '학년'));
-  GRADE_OPTIONS.forEach(([v, label]) => gradeSel.append(h('option', { value: v }, label)));
   $('#login').addEventListener('submit', onLogin);
   $('#pick-class').addEventListener('submit', onClass);
   $('#add-group').addEventListener('click', () => { addGroup(); renderGroups(); renderTargets(); });

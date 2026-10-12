@@ -18,8 +18,7 @@
         <button class="btn" type="button" data-mode="group" aria-pressed="false">모둠 코드가 있어요</button>
       </div>
       <form id="form-person" class="card">
-        <label class="field">학생 안내코드<input id="code" maxlength="6" autocapitalize="characters" autocomplete="off"></label>
-        <label class="field">학년<select id="grade"></select></label>
+        <label class="field">학생 안내코드<input id="code" maxlength="6" autocapitalize="characters" autocomplete="off"><span class="hint" id="code-who" aria-live="polite"></span></label>
         <label class="field">별명<span class="hint">신청할 때 쓴 별명</span><input id="name" maxlength="20"></label>
         <label class="field">비밀번호 4자리<input id="pin" type="password" inputmode="numeric" maxlength="4"></label>
         <button class="btn primary block" id="go-person" type="submit">일정 보기</button>
