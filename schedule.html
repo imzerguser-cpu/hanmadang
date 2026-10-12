@@ -33,7 +33,9 @@
 
     <section id="view" class="hidden">
       <h1 id="who"></h1>
+      <div id="alert-banner" class="alert-banner hidden" role="alert"></div>
       <div id="now-card" class="card" aria-live="polite"></div>
+      <div id="alarm-card" class="card"></div>
       <div class="card">
         <div class="row" style="align-items:center">
           <b style="flex:2">다섯 길 도장판</b>
@@ -44,7 +46,12 @@
       <h2>시간표</h2>
       <div id="timeline"></div>
       <div id="map-box" class="card hidden">
-        <b id="map-title"></b>
+        <div class="row" style="align-items:center">
+          <button class="btn small" id="map-prev" type="button" style="flex:none">◀ 이전</button>
+          <b id="map-step" style="flex:1;text-align:center"></b>
+          <button class="btn small" id="map-next" type="button" style="flex:none">다음 ▶</button>
+        </div>
+        <b id="map-title" style="display:block;margin-top:8px"></b>
         <p id="map-dir" class="muted" style="margin:4px 0 8px"></p>
         <div id="map"></div>
       </div>

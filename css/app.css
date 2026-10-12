@@ -216,6 +216,9 @@ table.simple .btn { white-space: normal; }
 .progress span { height: 10px; }
 
 /* 당일: 다음 체험과 도장판 */
+.alert-banner { background: #fff4d6; border: 2px solid #f2c200; border-radius: 12px; padding: 14px 16px; margin: 10px 0; font-size: 17px; }
+.mini-map { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; }
+.mini-map svg { display: block; width: 100%; height: auto; }
 #now-card { background: #eaf2e9; border: 2px solid #9ab89f; border-top: 6px solid var(--accent); padding: 20px; }
 #now-card h2 { font-size: 23px; }
 .stamps { gap: 4px; padding: 20px 0 8px; border-top: 1px dashed #c7d2c9; margin-top: 16px; }

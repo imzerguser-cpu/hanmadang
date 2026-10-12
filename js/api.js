@@ -33,7 +33,8 @@ export async function call(action, body = {}) {
 export async function getConfig() {
   try {
     const hit = JSON.parse(sessionStorage.getItem('hanmadang.config') || 'null');
-    if (hit && Date.now() - hit.at < 60000) return hit.data;
+    // 저장해 둔 설정의 서버 시각은 저장한 뒤 흐른 만큼 더해서 돌려준다 (시계가 뒤처지지 않게)
+    if (hit && Date.now() - hit.at < 60000) return { ...hit.data, now: hit.data.now + (Date.now() - hit.at) };
   } catch { /* 무시 */ }
   const data = await call('config');
   try { sessionStorage.setItem('hanmadang.config', JSON.stringify({ at: Date.now(), data })); } catch { /* 무시 */ }
